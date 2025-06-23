@@ -1,12 +1,7 @@
 from flask import Flask
-from flask_sqlalchemy import SQLAlchemy
+from server.config import db, jwt, SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS, JWT_SECRET_KEY
 from flask_migrate import Migrate
-from flask_jwt_extended import JWTManager
-from server.config import SQLALCHEMY_DATABASE_URI, SQLALCHEMY_TRACK_MODIFICATIONS, JWT_SECRET_KEY
-
-db = SQLAlchemy()
-migrate = Migrate()
-jwt = JWTManager()
+from server.models import *
 
 def create_app():
     app = Flask(__name__)
@@ -16,7 +11,12 @@ def create_app():
     app.config["JWT_SECRET_KEY"] = JWT_SECRET_KEY
 
     db.init_app(app)
-    migrate.init_app(app, db)
     jwt.init_app(app)
+    Migrate(app, db)
+
+    from server.controllers.auth_controller import auth_bp
+    app.register_blueprint(auth_bp)
 
     return app
+
+app = create_app()
